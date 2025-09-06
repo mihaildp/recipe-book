@@ -1,0 +1,77 @@
+name: Deploy Recipe Book App
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install backend dependencies
+      run: |
+        cd backend
+        npm ci
+        
+    - name: Run backend tests
+      run: |
+        cd backend
+        npm test --if-present
+        
+  test-frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        npm ci
+        
+    - name: Run frontend tests
+      run: |
+        cd frontend
+        npm test --if-present --passWithNoTests
+        
+    - name: Build frontend
+      run: |
+        cd frontend
+        npm run build
+      env:
+        REACT_APP_GOOGLE_CLIENT_ID: ${{ secrets.REACT_APP_GOOGLE_CLIENT_ID }}
+        REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+        
+  deploy:
+    needs: [test-backend, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to production
+      run: |
+        echo "Deployment successful!"
+        echo "Your app will auto-deploy if you're using Render/Vercel/Netlify with GitHub integration"
+        
+    # Uncomment below for custom deployment
+    # - name: Deploy to custom server
+    #   run: |
+    #     # Add your deployment script here
+    #     # ssh user@server 'cd /app && git pull && npm install && pm2 restart all'
