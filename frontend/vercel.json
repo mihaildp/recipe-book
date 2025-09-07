@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "name": "recipe-book-frontend",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://recipe-book-api.onrender.com/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
+    }
+  ],
+  "env": {
+    "REACT_APP_GOOGLE_CLIENT_ID": "@google_client_id",
+    "REACT_APP_API_URL": "@api_url"
+  }
+}
