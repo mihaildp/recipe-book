@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { 
   ArrowLeft, Edit3, Trash2, Star, Clock, Users, 
-  ChevronLeft, ChevronRight, Heart, Share2, Print,
+  ChevronLeft, ChevronRight, Heart, Share2, Printer,
   ChefHat, Copy, MessageSquare, Send, Lock, Globe, Users as UsersIcon
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
