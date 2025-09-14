@@ -339,7 +339,7 @@ const RecipeDetail = () => {
                     onClick={handlePrint}
                     className="bg-white/90 backdrop-blur-sm p-2 rounded-lg hover:bg-white transition-colors hidden md:block"
                   >
-                    <Print className="w-5 h-5" />
+                    <Printer className="w-5 h-5" />
                   </button>
                   <Link
                     to={`/recipes/${id}/edit`}
