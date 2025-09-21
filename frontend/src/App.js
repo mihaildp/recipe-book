@@ -1,8 +1,17 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
+
+// Authentication Components
 import Login from './components/Login';
+import EmailVerification from './components/auth/EmailVerification';
+import ForgotPassword from './components/auth/ForgotPassword';
+import ResetPassword from './components/auth/ResetPassword';
+import Onboarding from './components/auth/Onboarding';
+
+// Main App Components
 import Dashboard from './components/Dashboard';
 import RecipeList from './components/RecipeList';
 import RecipeForm from './components/RecipeForm';
@@ -10,12 +19,14 @@ import RecipeDetail from './components/RecipeDetail';
 import SharedRecipes from './components/SharedRecipes';
 import Discover from './components/Discover';
 import Profile from './components/Profile';
+
+// UI Components
 import LoadingSpinner from './components/LoadingSpinner';
 import Navigation from './components/Navigation';
 
 // Protected Route component
-const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+const ProtectedRoute = ({ children, requireOnboarding = true }) => {
+  const { isAuthenticated, loading, user } = useAuth();
   
   if (loading) {
     return <LoadingSpinner fullScreen />;
@@ -23,6 +34,11 @@ const ProtectedRoute = ({ children }) => {
   
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+  
+  // Redirect to onboarding if not completed (for new users)
+  if (requireOnboarding && user && !user.isOnboardingComplete && user.authMethod === 'local') {
+    return <Navigate to="/onboarding" replace />;
   }
   
   return (
@@ -58,11 +74,16 @@ function AppContent() {
           style: {
             background: '#363636',
             color: '#fff',
+            borderRadius: '8px',
           },
           success: {
             style: {
-              background: '#4ade80',
+              background: '#10b981',
               color: '#fff',
+            },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#10b981',
             },
           },
           error: {
@@ -70,17 +91,52 @@ function AppContent() {
               background: '#ef4444',
               color: '#fff',
             },
+            iconTheme: {
+              primary: '#fff',
+              secondary: '#ef4444',
+            },
+          },
+          loading: {
+            style: {
+              background: '#6366f1',
+              color: '#fff',
+            },
           },
         }}
       />
+      
       <Router>
         <Routes>
+          {/* Authentication Routes */}
           <Route path="/login" element={
             <PublicRoute>
               <Login />
             </PublicRoute>
           } />
           
+          <Route path="/verify-email/:token" element={
+            <EmailVerification />
+          } />
+          
+          <Route path="/forgot-password" element={
+            <PublicRoute>
+              <ForgotPassword />
+            </PublicRoute>
+          } />
+          
+          <Route path="/reset-password/:token" element={
+            <PublicRoute>
+              <ResetPassword />
+            </PublicRoute>
+          } />
+          
+          <Route path="/onboarding" element={
+            <ProtectedRoute requireOnboarding={false}>
+              <Onboarding />
+            </ProtectedRoute>
+          } />
+          
+          {/* Main App Routes */}
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
@@ -129,6 +185,7 @@ function AppContent() {
             </ProtectedRoute>
           } />
           
+          {/* Root and fallback routes */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
@@ -138,10 +195,18 @@ function AppContent() {
 }
 
 function App() {
+  const googleClientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+  
+  if (!googleClientId) {
+    console.warn('Google Client ID is not configured. Google OAuth will not work.');
+  }
+  
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={googleClientId || 'placeholder'}>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </GoogleOAuthProvider>
   );
 }
 
