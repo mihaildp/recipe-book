@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
+import authService from '../services/authService';
 
 const AuthContext = createContext({});
 
@@ -57,9 +58,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = Cookies.get('token');
       if (token) {
-        const response = await axios.get('/auth/verify');
-        if (response.data.success) {
-          setUser(response.data.user);
+        const response = await authService.verify();
+        if (response.success) {
+          setUser(response.user);
         }
       }
     } catch (error) {
@@ -70,26 +71,61 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Google OAuth login
   const login = async (credential) => {
     try {
-      const response = await axios.post('/auth/google', { credential });
-      if (response.data.success) {
-        const { token, user } = response.data;
+      const response = await authService.googleAuth(credential);
+      if (response.success) {
+        const { token, user } = response;
         Cookies.set('token', token, { expires: 30 }); // 30 days
         setUser(user);
         toast.success(`Welcome back, ${user.name}!`);
-        return { success: true };
+        return { success: true, user };
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('Login failed. Please try again.');
-      return { success: false, error: error.response?.data?.message || 'Login failed' };
+      const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  // Email/Password login and signup
+  const loginWithEmail = async (formData, type = 'signin') => {
+    try {
+      const response = type === 'signup' 
+        ? await authService.signup(formData)
+        : await authService.signin(formData);
+      
+      if (response.success) {
+        const { token, user, message } = response;
+        Cookies.set('token', token, { expires: 30 });
+        setUser(user);
+        
+        if (type === 'signup') {
+          toast.success(message || 'Account created successfully!');
+          if (!user.isEmailVerified) {
+            toast.info('Please check your email to verify your account', {
+              duration: 6000
+            });
+          }
+        } else {
+          toast.success(`Welcome back, ${user.name}!`);
+        }
+        
+        return { success: true, user };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 
+        (type === 'signup' ? 'Failed to create account' : 'Login failed');
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
     }
   };
 
   const logout = async () => {
     try {
-      await axios.post('/auth/logout');
+      await authService.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
@@ -97,6 +133,10 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
       toast.success('Logged out successfully');
     }
+  };
+
+  const updateUser = (updatedUser) => {
+    setUser(updatedUser);
   };
 
   const updateUserPreferences = async (preferences) => {
@@ -117,12 +157,87 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const verifyEmail = async (token) => {
+    try {
+      const response = await authService.verifyEmail(token);
+      if (response.success) {
+        setUser(prev => prev ? { ...prev, isEmailVerified: true } : null);
+        toast.success('Email verified successfully!');
+        return { success: true };
+      }
+    } catch (error) {
+      toast.error('Email verification failed. The link may have expired.');
+      return { success: false };
+    }
+  };
+
+  const forgotPassword = async (email) => {
+    try {
+      const response = await authService.forgotPassword(email);
+      if (response.success) {
+        toast.success('Password reset link sent to your email');
+        return { success: true };
+      }
+    } catch (error) {
+      toast.error('Failed to send reset email. Please try again.');
+      return { success: false };
+    }
+  };
+
+  const resetPassword = async (token, password) => {
+    try {
+      const response = await authService.resetPassword(token, password);
+      if (response.success) {
+        toast.success('Password reset successfully! Please login with your new password.');
+        return { success: true };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to reset password';
+      toast.error(errorMessage);
+      return { success: false };
+    }
+  };
+
+  const resendVerificationEmail = async () => {
+    try {
+      const response = await axios.post('/auth/resend-verification');
+      if (response.data.success) {
+        toast.success('Verification email sent! Please check your inbox.');
+        return { success: true };
+      }
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || 'Failed to send verification email';
+      toast.error(errorMessage);
+      return { success: false };
+    }
+  };
+
+  const completeOnboarding = async (profileData) => {
+    try {
+      const response = await authService.completeOnboarding(profileData);
+      if (response.success) {
+        setUser(prev => ({ ...prev, ...response.user }));
+        return { success: true };
+      }
+    } catch (error) {
+      toast.error('Failed to complete onboarding');
+      return { success: false };
+    }
+  };
+
   const value = {
     user,
     loading,
     login,
+    loginWithEmail,
     logout,
+    updateUser,
     updateUserPreferences,
+    verifyEmail,
+    forgotPassword,
+    resetPassword,
+    resendVerificationEmail,
+    completeOnboarding,
     isAuthenticated: !!user
   };
 

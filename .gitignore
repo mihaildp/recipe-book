@@ -1,59 +1,42 @@
 # Dependencies
 node_modules/
-package-lock.json
-yarn.lock
+/.pnp
+.pnp.js
 
-# Environment Variables
+# Testing
+/coverage
+
+# Production
+/build
+/dist
+
+# Environment files
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
 
-# Production builds
-build/
-dist/
-
-# Debug logs
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+.pnpm-debug.log*
 
 # OS Files
 .DS_Store
 Thumbs.db
 
-# IDE Files
-.vscode/
-.idea/
+# Editor directories and files
+.idea
+.vscode
 *.swp
 *.swo
+*.swn
+*.bak
 *~
-
-# Test coverage
-coverage/
-
-# Temporary files
-*.tmp
-*.temp
-tmp/
-temp/
-
-# Uploaded files (if storing locally)
-uploads/
-public/uploads/
-
-# MongoDB dump files
-dump/
-*.dump
-
-# Logs
-logs/
-*.log
-
-# PM2
-.pm2/
 
 # Optional npm cache directory
 .npm
@@ -69,3 +52,69 @@ logs/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# public
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Test files
+test-auth.js
+*.test.js
+*.spec.js
+
+# Backup files
+*.backup
+*.old
+*_old.*
+
+# Lock files (keep package-lock.json)
+yarn.lock
+pnpm-lock.yaml
