@@ -1,0 +1,16 @@
+{
+  "short_name": "Recipe Book",
+  "name": "Recipe Book - Your Personal Recipe Collection",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍳</text></svg>",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ff6b35",
+  "background_color": "#ffffff",
+  "description": "Save, organize, and share your favorite recipes"
+}

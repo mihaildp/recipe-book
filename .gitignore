@@ -1,73 +1,81 @@
 # Dependencies
 node_modules/
-package-lock.json
-yarn.lock
-
-# Environment Variables
-.env
-.env.*
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-!.env.example
-
-# Production builds
-build/
-dist/
-
-# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 lerna-debug.log*
 
-# OS Files
-.DS_Store
-Thumbs.db
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production.local
+backend/.env
+backend/.env.local
+frontend/.env.local
 
-# IDE Files
+# Production builds
+frontend/build/
+frontend/dist/
+backend/dist/
+
+# IDE & Editor files
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
 *.swp
 *.swo
 *~
-
-# Test coverage
-coverage/
-
-# Temporary files
-*.tmp
-*.temp
-tmp/
-temp/
-
-# Uploaded files (if storing locally)
-uploads/
-public/uploads/
-
-# MongoDB dump files
-dump/
-*.dump
 
 # Logs
 logs/
 *.log
 
-# PM2
-.pm2/
+# Testing
+coverage/
+.nyc_output/
+*.lcov
 
-# Optional npm cache directory
-.npm
+# Temporary files
+*.tmp
+*.temp
 
-# Optional eslint cache
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Package manager files
+yarn.lock
+package-lock.json
+
+# Cache directories
+.cache/
+.parcel-cache/
+.next/
+out/
+
+# Debug
 .eslintcache
+*.pem
 
-# Optional REPL history
-.node_repl_history
+# Backup files
+*.backup
+*.bak
 
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
+# Scripts and test files
+*.bat
+*.sh
+*.ps1
+*-test.html
+*-demo.html
+test-*
+demo-*
