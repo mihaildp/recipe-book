@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { 
   Book, ChefHat, Mail, Lock, Eye, EyeOff, 
-  ArrowRight, Check, User
+  ArrowRight, Check, User, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
@@ -11,9 +11,10 @@ import toast from 'react-hot-toast';
 const Login = () => {
   const navigate = useNavigate();
   const { login, loginWithEmail } = useAuth();
-  const [isSignup, setIsSignup] = useState(false);
+  const [isSignup, setIsSignup] = useState(true); // DEFAULT TO SIGNUP
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleError, setGoogleError] = useState(false);
   
   const [formData, setFormData] = useState({
     email: '',
@@ -70,6 +71,7 @@ const Login = () => {
         : await loginWithEmail(formData, 'signin');
       
       if (result.success) {
+        toast.success(isSignup ? 'Account created successfully!' : 'Welcome back!');
         if (!result.user.isOnboardingComplete && isSignup && result.user.authMethod === 'local') {
           navigate('/onboarding');
         } else {
@@ -84,14 +86,20 @@ const Login = () => {
   };
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    const result = await login(credentialResponse.credential);
-    if (result.success) {
-      navigate('/dashboard');
+    try {
+      const result = await login(credentialResponse.credential);
+      if (result.success) {
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      setGoogleError(true);
+      toast.error('Google login is temporarily unavailable. Please use email/password signup.');
     }
   };
 
   const handleGoogleError = () => {
-    toast.error('Google login failed. Please try again.');
+    setGoogleError(true);
+    toast.error('Google login is temporarily unavailable. Please use email/password signup.');
   };
 
   const handleInputChange = (e) => {
@@ -170,11 +178,11 @@ const Login = () => {
             <div className="bg-white rounded-2xl shadow-xl p-8">
               <div className="mb-6">
                 <h2 className="text-2xl font-bold mb-2">
-                  {isSignup ? 'Create Account' : 'Sign In'}
+                  {isSignup ? 'Create Your Account' : 'Sign In'}
                 </h2>
                 <p className="text-gray-600">
                   {isSignup 
-                    ? 'Start your culinary journey today' 
+                    ? 'Sign up with email to start saving recipes' 
                     : 'Access your recipe collection'}
                 </p>
               </div>
@@ -183,21 +191,32 @@ const Login = () => {
               <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
                 <button
                   onClick={() => setIsSignup(false)}
-                  className={`flex-1 py-2 rounded-lg transition-colors ${
-                    !isSignup ? 'bg-white shadow' : 'text-gray-600'
+                  className={`flex-1 py-2 rounded-lg transition-colors font-medium ${
+                    !isSignup ? 'bg-white shadow text-orange-600' : 'text-gray-600'
                   }`}
                 >
                   Sign In
                 </button>
                 <button
                   onClick={() => setIsSignup(true)}
-                  className={`flex-1 py-2 rounded-lg transition-colors ${
-                    isSignup ? 'bg-white shadow' : 'text-gray-600'
+                  className={`flex-1 py-2 rounded-lg transition-colors font-medium ${
+                    isSignup ? 'bg-white shadow text-orange-600' : 'text-gray-600'
                   }`}
                 >
                   Sign Up
                 </button>
               </div>
+
+              {/* Notice about Google OAuth */}
+              {googleError && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="text-blue-800 font-medium">Google login is being configured</p>
+                    <p className="text-blue-600">Please create an account with email/password for now.</p>
+                  </div>
+                </div>
+              )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 {isSignup && (
@@ -242,7 +261,7 @@ const Login = () => {
                         className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:outline-none ${
                           errors.username ? 'border-red-500' : 'border-gray-300'
                         }`}
-                        placeholder="johndoe"
+                        placeholder="johndoe (optional)"
                       />
                       {errors.username && (
                         <p className="text-red-500 text-xs mt-1">{errors.username}</p>
@@ -265,7 +284,7 @@ const Login = () => {
                       className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:outline-none ${
                         errors.email ? 'border-red-500' : 'border-gray-300'
                       }`}
-                      placeholder="john@example.com"
+                      placeholder="your@email.com"
                     />
                   </div>
                   {errors.email && (
@@ -275,7 +294,7 @@ const Login = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password *
+                    Password * {isSignup && '(min. 6 characters)'}
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
@@ -342,7 +361,7 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 font-medium"
                 >
                   {loading ? (
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
@@ -355,6 +374,15 @@ const Login = () => {
                 </button>
               </form>
 
+              {/* Quick Test Account Info */}
+              {isSignup && (
+                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-xs text-gray-600">
+                    <strong>Quick Test:</strong> Use any email like test@example.com with password Test123!
+                  </p>
+                </div>
+              )}
+
               <div className="relative my-6">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300"></div>
@@ -365,13 +393,20 @@ const Login = () => {
               </div>
 
               <div className="flex justify-center">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleError}
-                  theme="outline"
-                  size="large"
-                  width="300"
-                />
+                <div className="text-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSuccess}
+                    onError={handleGoogleError}
+                    theme="outline"
+                    size="large"
+                    width="300"
+                  />
+                  {googleError && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      (Google login temporarily unavailable)
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -379,9 +414,19 @@ const Login = () => {
             <div className="lg:flex flex-col justify-center">
               <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
                 <h3 className="text-xl font-bold mb-4">
-                  {isSignup ? 'Join thousands of home cooks' : 'Your recipes await'}
+                  {isSignup ? 'Why Join Recipe Book?' : 'Your recipes await'}
                 </h3>
                 <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-green-100 rounded-full p-1">
+                      <Check className="w-4 h-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">No Google Required</p>
+                      <p className="text-sm text-gray-600">Create an account with just your email</p>
+                    </div>
+                  </div>
+                  
                   <div className="flex items-start gap-3">
                     <div className="bg-green-100 rounded-full p-1">
                       <Check className="w-4 h-4 text-green-600" />
@@ -431,7 +476,7 @@ const Login = () => {
                     onClick={() => setIsSignup(!isSignup)}
                     className="text-orange-500 font-medium hover:underline"
                   >
-                    {isSignup ? 'Sign In' : 'Sign Up'}
+                    {isSignup ? 'Sign In' : 'Create Account'}
                   </button>
                 </p>
               </div>
