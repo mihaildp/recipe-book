@@ -65,6 +65,7 @@ router.post('/signup', async (req, res) => {
     // Send verification email
     const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
     
+    let emailSent = false;
     try {
       await sendEmail({
         to: email,
@@ -80,9 +81,11 @@ router.post('/signup', async (req, res) => {
           <p>This link will expire in 24 hours.</p>
         `
       });
+      emailSent = true;
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
       // Continue with signup even if email fails
+      console.log('⚠️ Email service not configured - user can still use the app');
     }
     
     // Generate JWT
@@ -103,7 +106,9 @@ router.post('/signup', async (req, res) => {
         isEmailVerified: user.isEmailVerified,
         isOnboardingComplete: user.isOnboardingComplete
       },
-      message: 'Account created successfully! Please verify your email.'
+      message: emailSent 
+        ? 'Account created successfully! Please verify your email.'
+        : 'Account created successfully! You can start using Recipe Book right away.'
     });
   } catch (error) {
     console.error('Signup error:', error);

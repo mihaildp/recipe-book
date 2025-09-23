@@ -2,6 +2,17 @@ const nodemailer = require('nodemailer');
 
 const sendEmail = async ({ to, subject, html, text }) => {
   try {
+    // Check if email service is configured
+    const hasEmailConfig = (
+      (process.env.NODE_ENV === 'production' && process.env.SENDGRID_USERNAME && process.env.SENDGRID_PASSWORD) ||
+      (process.env.NODE_ENV !== 'production' && process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD)
+    );
+    
+    if (!hasEmailConfig) {
+      console.log(`⚠️ Email service not configured - would send: ${subject} to ${to}`);
+      throw new Error('Email service not configured');
+    }
+    
     // Create transporter based on environment
     let transporter;
     
