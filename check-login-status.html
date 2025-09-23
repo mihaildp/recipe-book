@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Login Page Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f4f8;
+        }
+        .status-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .check-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .found {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .not-found {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .icon {
+            font-size: 24px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .fix-button {
+            background: #28a745;
+        }
+        .fix-button:hover {
+            background: #218838;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="status-box">
+        <h1>🔍 Recipe Book - Login Page Checker</h1>
+        
+        <p><strong>Checking what's visible on your login page...</strong></p>
+        
+        <div id="results">
+            <div class="check-item" style="background: #e7f3ff; border: 1px solid #b3d9ff;">
+                <span class="icon">⏳</span>
+                <span>Checking login page...</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button onclick="checkLoginPage()">🔄 Check Again</button>
+            <button onclick="window.open('https://recipe-book-frontend-8f1r.onrender.com', '_blank')">🌐 Open App</button>
+        </div>
+    </div>
+
+    <div class="status-box instructions">
+        <h2>📋 What Should You See?</h2>
+        <p>On the login page, you should see:</p>
+        <ol>
+            <li><strong>Two tabs</strong> at the top: "Sign In" and "Sign Up"</li>
+            <li><strong>Sign Up tab</strong> selected by default (with white background)</li>
+            <li><strong>Form fields</strong> for:
+                <ul>
+                    <li>Full Name</li>
+                    <li>Email Address</li>
+                    <li>Password</li>
+                    <li>Confirm Password</li>
+                </ul>
+            </li>
+            <li><strong>"Create Account" button</strong></li>
+            <li>Google login at the bottom (optional)</li>
+        </ol>
+        
+        <h3>🚫 If You Only See Google Login:</h3>
+        <p>Run this command to fix it:</p>
+        <code>fix-login-tabs.bat</code>
+        <p>Then wait 2-3 minutes for deployment.</p>
+    </div>
+
+    <script>
+        async function checkLoginPage() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="check-item" style="background: #e7f3ff; border: 1px solid #b3d9ff;"><span class="icon">⏳</span><span>Checking your app...</span></div>';
+            
+            const checks = {
+                tabs: false,
+                emailField: false,
+                passwordField: false,
+                signupButton: false,
+                googleOnly: false
+            };
+            
+            try {
+                // Try to fetch the app
+                const response = await fetch('https://recipe-book-frontend-8f1r.onrender.com');
+                const html = await response.text();
+                
+                // Check for various indicators
+                if (html.includes('Sign Up') && html.includes('Sign In')) {
+                    checks.tabs = true;
+                }
+                if (html.includes('Email') || html.includes('email')) {
+                    checks.emailField = true;
+                }
+                if (html.includes('Password') || html.includes('password')) {
+                    checks.passwordField = true;
+                }
+                if (html.includes('Create Account')) {
+                    checks.signupButton = true;
+                }
+                
+                // Display results
+                let resultHTML = '';
+                
+                if (checks.tabs) {
+                    resultHTML += '<div class="check-item found"><span class="icon">✅</span><span><strong>Sign Up/Sign In tabs:</strong> FOUND!</span></div>';
+                } else {
+                    resultHTML += '<div class="check-item not-found"><span class="icon">❌</span><span><strong>Sign Up/Sign In tabs:</strong> NOT FOUND - Need to deploy fix</span></div>';
+                }
+                
+                if (checks.emailField && checks.passwordField) {
+                    resultHTML += '<div class="check-item found"><span class="icon">✅</span><span><strong>Email/Password fields:</strong> FOUND!</span></div>';
+                } else {
+                    resultHTML += '<div class="check-item not-found"><span class="icon">❌</span><span><strong>Email/Password fields:</strong> NOT FOUND</span></div>';
+                }
+                
+                if (checks.signupButton) {
+                    resultHTML += '<div class="check-item found"><span class="icon">✅</span><span><strong>Create Account button:</strong> FOUND!</span></div>';
+                } else {
+                    resultHTML += '<div class="check-item not-found"><span class="icon">❌</span><span><strong>Create Account button:</strong> NOT FOUND</span></div>';
+                }
+                
+                // Overall status
+                if (checks.tabs && checks.emailField && checks.passwordField) {
+                    resultHTML += '<div class="check-item found" style="margin-top: 20px; font-weight: bold;"><span class="icon">🎉</span><span>Email/Password signup is AVAILABLE! Try creating an account.</span></div>';
+                } else {
+                    resultHTML += '<div class="check-item not-found" style="margin-top: 20px; font-weight: bold;"><span class="icon">⚠️</span><span>Email/Password signup not showing. Run: fix-login-tabs.bat</span></div>';
+                    resultHTML += '<div style="margin-top: 15px;"><button class="fix-button" onclick="showFixInstructions()">📝 Show Fix Instructions</button></div>';
+                }
+                
+                resultsDiv.innerHTML = resultHTML;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = '<div class="check-item not-found"><span class="icon">⚠️</span><span>Could not reach the app. It might be sleeping. Try opening it directly.</span></div>';
+            }
+        }
+        
+        function showFixInstructions() {
+            alert('To fix the login page:\n\n1. Run: fix-login-tabs.bat\n2. Wait 2-3 minutes for deployment\n3. Clear browser cache (Ctrl+Shift+R)\n4. Refresh the login page\n\nThe Sign Up tab should appear!');
+        }
+        
+        // Check on load
+        window.onload = () => {
+            checkLoginPage();
+        };
+    </script>
+</body>
+</html>
