@@ -5,7 +5,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Authentication Components
-import Login from './components/Login';
+import Login from './components/auth/Login';
 import EmailVerification from './components/auth/EmailVerification';
 import ForgotPassword from './components/auth/ForgotPassword';
 import ResetPassword from './components/auth/ResetPassword';
