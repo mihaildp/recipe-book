@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const authMiddleware = require('../middleware/auth');
@@ -13,30 +14,49 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Traditional Signup
 router.post('/signup', async (req, res) => {
   try {
+    console.log('🚀 Signup attempt started with body:', { ...req.body, password: '[HIDDEN]' });
+    
     const { email, password, name, username } = req.body;
     
     // Validation
     if (!email || !password || !name) {
+      console.log('❌ Validation failed - missing required fields');
       return res.status(400).json({
         success: false,
         message: 'Please provide all required fields'
       });
     }
     
+    console.log('✅ Basic validation passed');
+    
     // Password strength validation
     if (password.length < 6) {
+      console.log('❌ Password too short');
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 6 characters long'
       });
     }
     
+    console.log('✅ Password length validation passed');
+    
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      console.log('❌ Database not connected');
+      throw new Error('Database connection failed');
+    }
+    
+    console.log('✅ Database connected, checking for existing user');
+    
     // Check if user exists
     const existingUser = await User.findOne({ 
       $or: [{ email }, { username: username || null }] 
     });
     
+    console.log('🔍 Existing user check result:', existingUser ? 'Found existing user' : 'No existing user found');
+    
     if (existingUser) {
+      console.log('❌ User already exists');
       return res.status(400).json({
         success: false,
         message: existingUser.email === email 
@@ -45,11 +65,14 @@ router.post('/signup', async (req, res) => {
       });
     }
     
+    console.log('✅ No existing user, proceeding to create new user');
+    
     // Create verification token
     const verificationToken = crypto.randomBytes(32).toString('hex');
+    console.log('🔑 Generated verification token');
     
     // Create new user
-    const user = new User({
+    const userObject = {
       email,
       password,
       name,
@@ -58,15 +81,23 @@ router.post('/signup', async (req, res) => {
       emailVerificationToken: verificationToken,
       isEmailVerified: false,
       isOnboardingComplete: true  // Make onboarding optional
-    });
+    };
     
+    console.log('📝 Creating user with object:', { ...userObject, password: '[HIDDEN]', emailVerificationToken: '[HIDDEN]' });
+    
+    const user = new User(userObject);
+    
+    console.log('⚙️ User model created, attempting to save...');
     await user.save();
+    
+    console.log('✅ User saved successfully with ID:', user._id);
     
     // Send verification email
     const verificationUrl = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
     
     let emailSent = false;
     try {
+      console.log('📧 Attempting to send verification email...');
       await sendEmail({
         to: email,
         subject: 'Welcome to Recipe Book - Verify Your Email',
@@ -82,11 +113,14 @@ router.post('/signup', async (req, res) => {
         `
       });
       emailSent = true;
+      console.log('✅ Email sent successfully');
     } catch (emailError) {
-      console.error('Email sending failed:', emailError);
+      console.error('⚠️ Email sending failed:', emailError);
       // Continue with signup even if email fails
       console.log('⚠️ Email service not configured - user can still use the app');
     }
+    
+    console.log('🔑 Generating JWT token...');
     
     // Generate JWT
     const token = jwt.sign(
@@ -95,7 +129,9 @@ router.post('/signup', async (req, res) => {
       { expiresIn: '30d' }
     );
     
-    res.status(201).json({
+    console.log('✅ JWT token generated successfully');
+    
+    const responseData = {
       success: true,
       token,
       user: {
@@ -110,13 +146,29 @@ router.post('/signup', async (req, res) => {
       message: emailSent 
         ? 'Account created successfully! Please verify your email.'
         : 'Account created successfully! You can start using Recipe Book right away.'
-    });
+    };
+    
+    console.log('✅ Signup completed successfully, sending response');
+    
+    res.status(201).json(responseData);
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('🚨 SIGNUP ERROR DETAILS:');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error name:', error.name);
+    
+    if (error.name === 'ValidationError') {
+      console.error('Validation error details:', error.errors);
+    }
+    
     res.status(500).json({
       success: false,
       message: 'Error creating account',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+      errorDetails: process.env.NODE_ENV === 'development' ? {
+        name: error.name,
+        stack: error.stack
+      } : undefined
     });
   }
 });

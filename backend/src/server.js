@@ -10,6 +10,7 @@ const recipeRoutes = require('./routes/recipes');
 const userRoutes = require('./routes/users');
 const sharingRoutes = require('./routes/sharing');
 const adminRoutes = require('./routes/admin');
+const User = require('./models/User');
 
 const app = express();
 
@@ -43,8 +44,53 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'Recipe Book API is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
   });
+});
+
+// Test endpoint for debugging
+app.post('/api/test-signup', async (req, res) => {
+  try {
+    console.log('🔍 Test signup endpoint hit with body:', req.body);
+    
+    const { email, password, name } = req.body;
+    
+    // Test database connection
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error('Database not connected');
+    }
+    
+    console.log('✅ Database connected, proceeding with test user creation');
+    
+    // Try to create a simple test user
+    const testUser = {
+      email: email || 'test@example.com',
+      password: password || 'Test123!',
+      name: name || 'Test User',
+      authMethod: 'local',
+      isOnboardingComplete: true,
+      isEmailVerified: false
+    };
+    
+    console.log('📝 Test user object:', { ...testUser, password: '[HIDDEN]' });
+    
+    res.json({
+      success: true,
+      message: 'Test endpoint working',
+      dbStatus: 'Connected',
+      testData: { ...testUser, password: '[HIDDEN]' }
+    });
+    
+  } catch (error) {
+    console.error('❌ Test signup error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Test endpoint error',
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
 });
 
 // Error handling middleware

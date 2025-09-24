@@ -20,6 +20,7 @@ import SharedRecipes from './components/SharedRecipes';
 import Discover from './components/Discover';
 import Profile from './components/Profile';
 import AdminDashboard from './components/AdminDashboard';
+import DebugPanel from './components/DebugPanel';
 
 // UI Components
 import LoadingSpinner from './components/LoadingSpinner';
@@ -190,6 +191,10 @@ function AppContent() {
             <ProtectedRoute>
               <AdminDashboard />
             </ProtectedRoute>
+          } />
+          
+          <Route path="/debug" element={
+            <DebugPanel />
           } />
           
           {/* Root and fallback routes */}

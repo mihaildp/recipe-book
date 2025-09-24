@@ -153,7 +153,7 @@ const userSchema = new mongoose.Schema({
   },
   isOnboardingComplete: {
     type: Boolean,
-    default: false
+    default: true  // Made optional by default
   },
   createdAt: {
     type: Date,
