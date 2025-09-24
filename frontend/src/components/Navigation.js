@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Book, Home, Globe, Users, Plus, User, LogOut, Menu, X,
-  ChefHat, Search
+  ChefHat, Search, Shield
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Navigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
@@ -23,6 +23,7 @@ const Navigation = () => {
     { path: '/dashboard', label: 'My Recipes', icon: Home },
     { path: '/discover', label: 'Discover', icon: Globe },
     { path: '/shared', label: 'Shared with Me', icon: Users },
+    ...(isAdmin ? [{ path: '/admin', label: 'Admin Panel', icon: Shield }] : [])
   ];
 
   return (

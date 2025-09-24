@@ -238,7 +238,8 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     resendVerificationEmail,
     completeOnboarding,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    isAdmin: user?.role === 'admin'
   };
 
   return (

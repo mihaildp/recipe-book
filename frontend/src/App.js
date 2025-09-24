@@ -19,6 +19,7 @@ import RecipeDetail from './components/RecipeDetail';
 import SharedRecipes from './components/SharedRecipes';
 import Discover from './components/Discover';
 import Profile from './components/Profile';
+import AdminDashboard from './components/AdminDashboard';
 
 // UI Components
 import LoadingSpinner from './components/LoadingSpinner';
@@ -182,6 +183,12 @@ function AppContent() {
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           } />
           

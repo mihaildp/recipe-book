@@ -141,6 +141,11 @@ const userSchema = new mongoose.Schema({
   },
   
   // Account Status
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
   accountStatus: {
     type: String,
     enum: ['active', 'suspended', 'deleted'],
