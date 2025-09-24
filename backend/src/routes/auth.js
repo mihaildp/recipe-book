@@ -71,17 +71,21 @@ router.post('/signup', async (req, res) => {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     console.log('🔑 Generated verification token');
     
-    // Create new user
+    // Create new user - don't include googleId field for local users
     const userObject = {
       email,
       password,
       name,
-      username: username || undefined,
       authMethod: 'local',
       emailVerificationToken: verificationToken,
       isEmailVerified: false,
       isOnboardingComplete: true  // Make onboarding optional
     };
+    
+    // Only add username if provided
+    if (username) {
+      userObject.username = username;
+    }
     
     console.log('📝 Creating user with object:', { ...userObject, password: '[HIDDEN]', emailVerificationToken: '[HIDDEN]' });
     
