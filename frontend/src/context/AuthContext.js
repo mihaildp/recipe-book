@@ -225,6 +225,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const skipOnboarding = async () => {
+    try {
+      const response = await authService.skipOnboarding();
+      if (response.success) {
+        setUser(prev => ({ ...prev, ...response.user }));
+        toast.success('Welcome to Recipe Book!');
+        return { success: true };
+      }
+    } catch (error) {
+      toast.error('Failed to skip onboarding');
+      return { success: false };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -238,6 +252,7 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     resendVerificationEmail,
     completeOnboarding,
+    skipOnboarding,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin'
   };

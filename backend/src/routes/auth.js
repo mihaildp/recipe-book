@@ -57,7 +57,7 @@ router.post('/signup', async (req, res) => {
       authMethod: 'local',
       emailVerificationToken: verificationToken,
       isEmailVerified: false,
-      isOnboardingComplete: false
+      isOnboardingComplete: true  // Make onboarding optional
     });
     
     await user.save();
@@ -103,6 +103,7 @@ router.post('/signup', async (req, res) => {
         email: user.email,
         name: user.name,
         username: user.username,
+        authMethod: user.authMethod,
         isEmailVerified: user.isEmailVerified,
         isOnboardingComplete: user.isOnboardingComplete
       },
@@ -173,6 +174,7 @@ router.post('/signin', async (req, res) => {
         name: user.name,
         username: user.username,
         picture: user.picture,
+        authMethod: user.authMethod,
         isEmailVerified: user.isEmailVerified,
         isOnboardingComplete: user.isOnboardingComplete,
         preferences: user.preferences
@@ -219,7 +221,7 @@ router.post('/google', async (req, res) => {
         picture,
         authMethod: 'google',
         isEmailVerified: true, // Google emails are pre-verified
-        isOnboardingComplete: false
+        isOnboardingComplete: true  // Make onboarding optional
       });
       await user.save();
       console.log('New Google user created:', email);
@@ -251,6 +253,7 @@ router.post('/google', async (req, res) => {
         name: user.name,
         username: user.username,
         picture: user.picture,
+        authMethod: user.authMethod,
         isEmailVerified: user.isEmailVerified,
         isOnboardingComplete: user.isOnboardingComplete,
         preferences: user.preferences
@@ -493,12 +496,44 @@ router.post('/complete-onboarding', authMiddleware, async (req, res) => {
   }
 });
 
+// Skip Onboarding
+router.post('/skip-onboarding', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Mark onboarding as complete even though skipped
+    user.isOnboardingComplete = true;
+    await user.save();
+    
+    res.json({
+      success: true,
+      message: 'Onboarding skipped successfully',
+      user: {
+        id: user._id,
+        isOnboardingComplete: true
+      }
+    });
+  } catch (error) {
+    console.error('Skip onboarding error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error skipping onboarding'
+    });
+  }
+});
+
 // Verify token and get user info
 router.get('/verify', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-      .select('-password -emailVerificationToken -passwordResetToken -__v')
-      .populate('recipes', 'title photos category rating');
+      .select('-password -emailVerificationToken -passwordResetToken -__v');
     
     if (!user) {
       return res.status(404).json({
@@ -521,12 +556,13 @@ router.get('/verify', authMiddleware, async (req, res) => {
         favoritesCuisines: user.favoritesCuisines,
         dietaryPreferences: user.dietaryPreferences,
         preferences: user.preferences,
+        authMethod: user.authMethod,
         isEmailVerified: user.isEmailVerified,
         isOnboardingComplete: user.isOnboardingComplete,
-        recipesCount: user.recipes.length,
-        favoritesCount: user.favoriteRecipes.length,
-        followersCount: user.followers.length,
-        followingCount: user.following.length
+        recipesCount: user.recipes?.length || 0,
+        favoritesCount: user.favoriteRecipes?.length || 0,
+        followersCount: user.followers?.length || 0,
+        followingCount: user.following?.length || 0
       }
     });
   } catch (error) {

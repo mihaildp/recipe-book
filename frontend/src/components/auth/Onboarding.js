@@ -5,12 +5,11 @@ import {
   Utensils, Globe, Leaf, Info, SkipForward
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import authService from '../../services/authService';
 import toast from 'react-hot-toast';
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, completeOnboarding, skipOnboarding } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   
@@ -59,8 +58,8 @@ const Onboarding = () => {
   const handleComplete = async () => {
     setLoading(true);
     try {
-      const response = await authService.completeOnboarding(profile);
-      if (response.success) {
+      const result = await completeOnboarding(profile);
+      if (result.success) {
         updateUser({ ...user, isOnboardingComplete: true });
         toast.success('Welcome to Recipe Book! Your profile is all set.');
         navigate('/dashboard');
@@ -72,9 +71,21 @@ const Onboarding = () => {
     }
   };
 
-  const handleSkip = () => {
-    navigate('/dashboard');
-    toast.info('You can complete your profile later from settings');
+  const handleSkip = async () => {
+    setLoading(true);
+    try {
+      const result = await skipOnboarding();
+      if (result.success) {
+        updateUser({ ...user, isOnboardingComplete: true });
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      // Fallback: navigate anyway
+      navigate('/dashboard');
+      toast.info('You can complete your profile later from settings');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const canProceed = () => {
@@ -261,10 +272,11 @@ const Onboarding = () => {
               <span className="text-sm text-gray-600">Step {currentStep} of {totalSteps}</span>
               <button
                 onClick={handleSkip}
-                className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                disabled={loading}
+                className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1 disabled:opacity-50"
               >
                 <SkipForward className="w-4 h-4" />
-                Skip for now
+                {loading ? 'Skipping...' : 'Skip for now'}
               </button>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">

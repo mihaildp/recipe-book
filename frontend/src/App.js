@@ -26,7 +26,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import Navigation from './components/Navigation';
 
 // Protected Route component
-const ProtectedRoute = ({ children, requireOnboarding = true }) => {
+const ProtectedRoute = ({ children, requireOnboarding = false }) => {
   const { isAuthenticated, loading, user } = useAuth();
   
   if (loading) {
@@ -37,8 +37,8 @@ const ProtectedRoute = ({ children, requireOnboarding = true }) => {
     return <Navigate to="/login" replace />;
   }
   
-  // Redirect to onboarding if not completed (for new users)
-  if (requireOnboarding && user && !user.isOnboardingComplete && user.authMethod === 'local') {
+  // Only redirect to onboarding if explicitly required (like in profile setup)
+  if (requireOnboarding && user && !user.isOnboardingComplete) {
     return <Navigate to="/onboarding" replace />;
   }
   

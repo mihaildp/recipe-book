@@ -72,11 +72,7 @@ const Login = () => {
       
       if (result.success) {
         toast.success(isSignup ? 'Account created successfully!' : 'Welcome back!');
-        if (!result.user.isOnboardingComplete && isSignup && result.user.authMethod === 'local') {
-          navigate('/onboarding');
-        } else {
-          navigate('/dashboard');
-        }
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Auth error:', error);

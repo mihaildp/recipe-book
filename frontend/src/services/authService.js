@@ -33,6 +33,11 @@ const authService = {
     return response.data;
   },
 
+  skipOnboarding: async () => {
+    const response = await axios.post(`${API_URL}/auth/skip-onboarding`);
+    return response.data;
+  },
+
   googleAuth: async (credential) => {
     const response = await axios.post(`${API_URL}/auth/google`, { credential });
     return response.data;
