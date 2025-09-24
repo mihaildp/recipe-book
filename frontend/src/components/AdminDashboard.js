@@ -24,7 +24,24 @@ const AdminDashboard = () => {
     limit: 20
   });
 
-  // Redirect if not admin
+  // All hooks must be called before any early returns
+  useEffect(() => {
+    if (isAdmin) {
+      fetchStats();
+    }
+  }, [isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      if (activeTab === 'users') {
+        fetchUsers();
+      } else if (activeTab === 'recipes') {
+        fetchRecipes();
+      }
+    }
+  }, [activeTab, filters, isAdmin]);
+
+  // Redirect if not admin - AFTER all hooks
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -36,18 +53,6 @@ const AdminDashboard = () => {
       </div>
     );
   }
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  useEffect(() => {
-    if (activeTab === 'users') {
-      fetchUsers();
-    } else if (activeTab === 'recipes') {
-      fetchRecipes();
-    }
-  }, [activeTab, filters]);
 
   const fetchStats = async () => {
     try {
