@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import recipeService from '../services/recipeService';
 import LoadingSpinner from './LoadingSpinner';
 import ShareRecipeModal from './ShareRecipeModal';
+import RecipeCard from './RecipeCard';
 import toast from 'react-hot-toast';
 
 const Dashboard = () => {
@@ -237,90 +238,13 @@ const Dashboard = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recipes.map(recipe => (
-              <div
+              <RecipeCard
                 key={recipe._id}
-                onClick={() => navigate(`/recipes/${recipe._id}`)}
-                className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all cursor-pointer"
-              >
-                <div className="h-48 bg-gradient-to-br from-orange-200 to-red-200 relative">
-                  {recipe.photos && recipe.photos.length > 0 ? (
-                    <img 
-                      src={recipe.photos[0].url} 
-                      alt={recipe.title} 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <ChefHat className="w-16 h-16 text-white/50" />
-                    </div>
-                  )}
-                  
-                  {/* Visibility badge */}
-                  <div className="absolute top-2 left-2">
-                    {getVisibilityBadge(recipe.visibility)}
-                  </div>
-                  
-                  {/* Rating */}
-                  {recipe.rating > 0 && (
-                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg">
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-4 h-4 ${
-                              i < recipe.rating 
-                                ? 'text-yellow-400 fill-current' 
-                                : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Share button */}
-                  <button
-                    onClick={(e) => handleShareRecipe(recipe, e)}
-                    className="absolute bottom-2 right-2 p-2 bg-white/90 backdrop-blur-sm rounded-lg hover:bg-white transition-colors"
-                    title="Share recipe"
-                  >
-                    <Share2 className="w-4 h-4 text-gray-700" />
-                  </button>
-                </div>
-                
-                <div className="p-4">
-                  <h3 className="font-bold text-lg mb-2 line-clamp-1">{recipe.title}</h3>
-                  
-                  <div className="flex gap-4 text-sm text-gray-600 mb-3">
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" />
-                      {(recipe.prepTime || 0) + (recipe.cookTime || 0)} min
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <User className="w-4 h-4" />
-                      {recipe.servings} servings
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 flex-wrap">
-                    {recipe.category && (
-                      <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-semibold">
-                        {recipe.category}
-                      </span>
-                    )}
-                    {recipe.region && (
-                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-semibold">
-                        {recipe.region}
-                      </span>
-                    )}
-                    {recipe.sharedWith && recipe.sharedWith.length > 0 && (
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-semibold">
-                        Shared with {recipe.sharedWith.length}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
+                recipe={recipe}
+                onUpdate={fetchRecipes}
+                onDelete={handleDeleteRecipe}
+                onShare={handleShareRecipe}
+              />
             ))}
           </div>
         )}

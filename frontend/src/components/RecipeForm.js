@@ -56,7 +56,11 @@ const RecipeForm = () => {
       setLoading(true);
       const response = await recipeService.getRecipe(id);
       if (response.success) {
-        setRecipe(response.recipe);
+        // Include visibility when loading recipe for editing
+        setRecipe({
+          ...response.recipe,
+          visibility: response.recipe.visibility || 'private'
+        });
         if (response.recipe.photos) {
           setPhotoPreview(response.recipe.photos.map(p => p.url));
         }
@@ -207,7 +211,8 @@ const RecipeForm = () => {
       const recipeData = {
         ...recipe,
         ingredients: validIngredients,
-        instructions: validInstructions
+        instructions: validInstructions,
+        visibility: recipe.visibility // Ensure visibility is included in updates
       };
 
       let response;
