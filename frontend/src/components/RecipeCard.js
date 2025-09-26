@@ -4,6 +4,8 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import recipeService from '../services/recipeService';
+import { Star, Clock, User, ChefHat } from 'lucide-react';
+
 import toast from 'react-hot-toast';
 
 const RecipeCard = ({ recipe, onUpdate, onDelete, onShare }) => {
@@ -249,6 +251,5 @@ const RecipeCard = ({ recipe, onUpdate, onDelete, onShare }) => {
 };
 
 // Add missing imports for icons used in recipe content
-import { Star, Clock, User, ChefHat } from 'lucide-react';
 
 export default RecipeCard;
