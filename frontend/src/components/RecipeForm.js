@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, Save, Plus, Trash2, Camera, Link as LinkIcon, 
-  PenTool, X, Upload, Star, Clock, Users 
+  PenTool, X, Upload, Star, Clock, Users, Globe, Lock, Share2, Scan 
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import recipeService from '../services/recipeService';
 import LoadingSpinner from './LoadingSpinner';
+import RecipeScanner from './RecipeScanner';
 import toast from 'react-hot-toast';
 
 const RecipeForm = () => {
@@ -33,8 +34,10 @@ const RecipeForm = () => {
     rating: 0,
     notes: '',
     photos: [],
-    tags: []
+    tags: [],
+    visibility: 'public' // Default to public
   });
+  const [showScanner, setShowScanner] = useState(false);
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [photoPreview, setPhotoPreview] = useState([]);
@@ -258,6 +261,19 @@ const RecipeForm = () => {
           </div>
 
           {/* Import Methods (only for new recipes) */}
+          {!isEditMode && (
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={() => setShowScanner(true)}
+                className="w-full py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+              >
+                <Scan className="w-5 h-5" />
+                Scan Recipe from Photo (OCR)
+              </button>
+            </div>
+          )}
+
           {!isEditMode && inputMethod !== 'manual' && (
             <div className="mb-8">
               <div className="flex gap-4 mb-6">
@@ -585,6 +601,67 @@ const RecipeForm = () => {
                 </div>
               </div>
 
+              {/* Visibility Settings */}
+              <div>
+                <label className="block text-sm font-semibold mb-2">Recipe Visibility</label>
+                <div className="grid grid-cols-3 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setRecipe(prev => ({ ...prev, visibility: 'public' }))}
+                    className={`py-3 px-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                      recipe.visibility === 'public'
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <Globe className="w-5 h-5" />
+                    <span className="font-semibold">Public</span>
+                    <span className="text-xs text-center">Anyone can view</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRecipe(prev => ({ ...prev, visibility: 'shared' }))}
+                    className={`py-3 px-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                      recipe.visibility === 'shared'
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <Share2 className="w-5 h-5" />
+                    <span className="font-semibold">Shared</span>
+                    <span className="text-xs text-center">Share with specific people</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRecipe(prev => ({ ...prev, visibility: 'private' }))}
+                    className={`py-3 px-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${
+                      recipe.visibility === 'private'
+                        ? 'border-gray-700 bg-gray-100 text-gray-700'
+                        : 'border-gray-300 hover:border-gray-400'
+                    }`}
+                  >
+                    <Lock className="w-5 h-5" />
+                    <span className="font-semibold">Private</span>
+                    <span className="text-xs text-center">Only you can view</span>
+                  </button>
+                </div>
+                {recipe.visibility === 'public' && (
+                  <p className="mt-2 text-sm text-green-600">
+                    ✨ This recipe will be discoverable by the community
+                  </p>
+                )}
+                {recipe.visibility === 'shared' && (
+                  <p className="mt-2 text-sm text-blue-600">
+                    📤 You can share this recipe with specific people after saving
+                  </p>
+                )}
+                {recipe.visibility === 'private' && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    🔒 This recipe will be private to your account only
+                  </p>
+                )}
+              </div>
+
               {/* Submit Buttons */}
               <div className="flex gap-4 pt-6">
                 <button
@@ -615,6 +692,29 @@ const RecipeForm = () => {
           )}
         </div>
       </div>
+
+      {/* Recipe Scanner Modal */}
+      {showScanner && (
+        <RecipeScanner
+          onExtracted={(extractedData) => {
+            setRecipe(prev => ({
+              ...prev,
+              title: extractedData.title || prev.title,
+              ingredients: extractedData.ingredients.length > 0 ? extractedData.ingredients : prev.ingredients,
+              instructions: extractedData.instructions.length > 0 ? extractedData.instructions : prev.instructions,
+              prepTime: extractedData.prepTime || prev.prepTime,
+              cookTime: extractedData.cookTime || prev.cookTime,
+              servings: extractedData.servings || prev.servings,
+              category: extractedData.category || prev.category,
+              region: extractedData.region || prev.region
+            }));
+            setInputMethod('manual');
+            setShowScanner(false);
+            toast.success('Recipe imported! You can now edit and save it.');
+          }}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
     </div>
   );
 };

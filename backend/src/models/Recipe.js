@@ -75,7 +75,7 @@ const recipeSchema = new mongoose.Schema({
   visibility: {
     type: String,
     enum: ['private', 'public', 'shared'],
-    default: 'private'
+    default: 'public' // Changed to public by default
   },
   sharedWith: [{
     user: {
