@@ -243,25 +243,38 @@ const Login = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Username (optional)
                       </label>
-                      <input
-                        type="text"
-                        name="username"
-                        value={formData.username}
-                        onChange={(e) => handleInputChange({
-                          ...e,
-                          target: {
-                            ...e.target,
-                            value: e.target.value.toLowerCase()
-                          }
-                        })}
-                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:outline-none ${
-                          errors.username ? 'border-red-500' : 'border-gray-300'
-                        }`}
-                        placeholder="johndoe (optional)"
-                      />
+                      <div className="relative">
+                        <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          name="username"
+                          value={formData.username}
+                          onChange={(e) => {
+                            const lowercaseValue = e.target.value.toLowerCase();
+                            setFormData({
+                              ...formData,
+                              username: lowercaseValue
+                            });
+                            // Clear error for this field
+                            if (errors.username) {
+                              setErrors({
+                                ...errors,
+                                username: ''
+                              });
+                            }
+                          }}
+                          className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:outline-none ${
+                            errors.username ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                          placeholder="johndoe (optional)"
+                          autoComplete="username"
+                          spellCheck="false"
+                        />
+                      </div>
                       {errors.username && (
                         <p className="text-red-500 text-xs mt-1">{errors.username}</p>
                       )}
+                      <p className="text-xs text-gray-500 mt-1">Username can only contain lowercase letters, numbers, and underscores</p>
                     </div>
                   </>
                 )}
